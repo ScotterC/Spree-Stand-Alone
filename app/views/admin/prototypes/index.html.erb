@@ -1,0 +1,37 @@
+<%= render :partial => 'admin/shared/product_sub_menu' %>
+
+<div class='toolbar'>
+  <ul class='actions'>
+    <li id="new_prototype_link">
+      <%= button_link_to t("new_prototype"), new_admin_prototype_url, {:remote => true, :icon => 'add', 'data-update' => 'new_prototype', :id => 'new_prototype_link'} %>
+    </li>
+  </ul>
+  <br class='clear' />
+</div>
+
+
+<h1><%=t("prototypes") %></h1>
+
+<%= image_tag "spinner.gif", :plugin=>"spree", :style => "display:none", :id => 'busy_indicator' %>
+<div id="new_prototype"></div>
+
+<table class="index" id='listing_prototypes'>
+  <thead>
+    <tr>
+      <th><%= t("name") %></th>
+      <th><%= t("action") %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @prototypes.each do |prototype| %>
+      <tr id="<%= dom_id prototype %>">
+        <td><%= prototype.name %></td>
+        <td class="actions">
+          <%= link_to_edit(prototype, :class => 'admin_edit_prototype') %>
+          &nbsp;
+          <%= link_to_delete(prototype) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

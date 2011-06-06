@@ -1,0 +1,34 @@
+<table class="index" id='listing_states'>
+  <thead>
+    <tr>
+      <th><%= t("name") %></th>
+      <th><%= t("abbreviation") %></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @states.each do |state|
+         @edit_url = admin_country_state_path(@country, state)
+         @delete_url = admin_country_state_path(@country, state)
+    %>
+      <tr id="<%= dom_id state %>">
+        <td><%=state.name %></td>
+        <td><%=state.abbr %></td>
+        <td class="actions">
+          <%= link_to_with_icon 'edit', t("edit"), edit_admin_country_state_url(@country, state), :class => 'edit' %>
+          &nbsp;
+          <%= link_to_delete state %>
+        </td>
+      </tr>
+    <% end %>
+    <% if @states.empty? %>
+      <tr><td colspan="3"><%= t(:none) %></td></tr>
+    <% end %>
+  </tbody>
+</table>
+<div id="new_state"></div>
+<p>
+  <%= button_link_to t("new_state"), new_admin_country_state_url(@country), {:remote => true,
+                                                                             :icon => 'add',
+                                                                              :id => 'new_state'} %>
+</p>

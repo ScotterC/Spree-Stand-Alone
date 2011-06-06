@@ -1,0 +1,31 @@
+<%= csrf_meta_tag %>
+<div class='order-links'>
+  <%= hook :admin_order_edit_buttons do %>
+    <div class='toolbar'>
+      <%= event_links %>
+    </div>
+    <div class='toolbar'>
+      <%= button_link_to(t("resend"), resend_admin_order_url(@order), :method => :post, :icon => 'send-email') if @order.user %>
+    </div>
+  <% end %>
+</div>
+
+<%= render :partial => 'admin/shared/order_tabs', :locals => {:current => "Order Details"} %>
+
+<%= hook :admin_order_edit_header do %>
+  <%= render "shared/error_messages", :target => @order %>
+<% end %>
+
+<%= render :partial => "add_product" %>
+
+<%= hook :admin_order_edit_form do %>
+  <div id="order-form-wrapper">
+    <%= render :partial => 'form', :locals => {:order => @order} %>
+  </div>
+<% end %>
+
+<% content_for :head do %>
+  <%= javascript_tag "var expand_variants = true;" %>
+  <%= javascript_include_tag 'admin/orders/edit.js' %>
+  <%= stylesheet_link_tag 'admin/edit_orders.css' %>
+<% end %>

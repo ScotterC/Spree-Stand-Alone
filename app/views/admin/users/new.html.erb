@@ -1,0 +1,14 @@
+<%= hook :admin_user_new_form_header do %>
+  <%= render 'shared/error_messages', :target => @user %>
+  <h1><%= t("new_user") %></h1>
+<% end %>
+
+<%= hook :admin_user_new_form do %>
+  <%= form_for(:user, :url => collection_url) do |f| %>
+    <%= render :partial => "form", :locals => { :f => f } %>
+
+    <%= hook :admin_user_new_form_buttons do %>
+      <%= render :partial => "admin/shared/new_resource_links" %>
+    <% end %>
+  <% end %>
+<% end %>

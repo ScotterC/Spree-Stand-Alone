@@ -1,0 +1,40 @@
+<%= render :partial => 'admin/shared/product_sub_menu' %>
+
+<div class='toolbar'>
+  <ul class='actions'>
+    <li id="new_property_link">
+      <%= button_link_to t("new_property"), new_admin_property_url, {:remote => true, :icon => 'add', 'data-update' => 'new_property', :id => 'new_property_link'} %>
+    </li>
+  </ul>
+  <br class='clear' />
+</div>
+
+<h1><%= t("properties") %></h1>
+
+<div id="new_property"></div>
+
+<%= image_tag "spinner.gif", :plugin=>"spree", :style => "display:none", :id => 'busy_indicator' %>
+
+<table class="index" id='listing_properties'>
+  <thead>
+    <tr>
+      <th><%= t("name") %></th>
+      <th><%= t("presentation") %></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @properties.each do |property| %>
+      <tr id="<%= dom_id property %>">
+        <td><%= property.name %></td>
+        <td><%= property.presentation %></td>
+        <td class="actions">
+          <%= link_to_edit(property, :class => 'edit') %>
+          &nbsp;
+          <%= link_to_delete(property) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
