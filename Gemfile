@@ -1,13 +1,8 @@
 source 'http://rubygems.org'
 
 gem 'rails', '3.0.7'
-
-# Bundle edge Rails instead:
-# gem 'rails',     :git => 'git://github.com/rails/rails.git'
-
-gem 'rake', '0.8.7'
+gem 'rake', '0.9.2'
 gem 'sqlite3'
-# Asset template engines
 gem 'sass'
 gem 'coffee-script'
 gem 'uglifier'
@@ -29,8 +24,6 @@ gem 'meta_search'
 gem 'activemerchant'
 gem 'will_paginate', '3.0.pre2'
 
-
-
 group :development do 
   gem 'sqlite3-ruby', :require => 'sqlite3'
   gem 'ruby-debug19', :require => 'ruby-debug'
@@ -44,16 +37,6 @@ group :development do
   gem 'wirble'
   gem 'hirb'
 end
-
-
-# Use unicorn as the web server
-# gem 'unicorn'
-
-# Deploy with Capistrano
-# gem 'capistrano'
-
-# To use debugger
-
 
 group :test do
   # Pretty printed test output
