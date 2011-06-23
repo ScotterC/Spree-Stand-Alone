@@ -26,9 +26,13 @@ class Payment < ActiveRecord::Base
       transition :from => ['checkout', 'pending', 'completed'], :to => 'processing'
     end
     # When processing during checkout fails
-    event :fail do
+    event :failit do
       transition :from => 'processing', :to => 'failed'
     end
+    #     # When processing during checkout fails
+    # event :fail do
+    #   transition :from => 'processing', :to => 'failed'
+    # end
     # With card payments this represents authorizing the payment
     event :pend do
       transition :from => 'processing', :to => 'pending'

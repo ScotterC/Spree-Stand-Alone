@@ -2,7 +2,8 @@ class ShippingMethod < ActiveRecord::Base
   DISPLAY =  [:both, :front_end, :back_end]
   belongs_to :zone
   has_many :shipments
-
+  validates :name, :calculator, :zone, :presence => true
+  
   calculated_adjustments
 
   def available?(order, display_on=nil)

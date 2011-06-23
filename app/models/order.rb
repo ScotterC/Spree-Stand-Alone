@@ -32,8 +32,8 @@ class Order < ActiveRecord::Base
 
   before_save :process_coupon_code, :if => "@coupon_code.present?"
 
-  validates_presence_of :email, :if => :require_email
-  validates_format_of :email, :with => /^([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})$/i, :if => :require_email
+  # TODO: validate the format of the email as well (but we can't rely on authlogic anymore to help with validation)	
+  validates :email, :presence => true, :format => /^([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})$/i, :if => :require_email  
   validate :has_available_shipment
 
   #delegate :ip_address, :to => :checkout

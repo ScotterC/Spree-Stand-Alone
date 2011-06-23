@@ -75,5 +75,11 @@ module SpreeCore
 
     config.to_prepare &method(:activate).to_proc
 
+    # filter sensitive information during logging
+    initializer "spree.params.filter" do |app|
+    app.config.filter_parameters += [:password, :password_confirmation, :number]
+    
+  end
+
   end
 end

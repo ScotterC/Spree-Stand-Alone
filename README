@@ -2,4 +2,4 @@ This is a version of Spree [http://spreecommerce.com/], the open source Rails ec
 
 Extensions and certain generators of the spree system will be inoperable but all the code will be in one place and be completely configurable.
 
-Current version is 0.60.0
+Current version is 0.60.1
