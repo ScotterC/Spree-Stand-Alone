@@ -62,7 +62,9 @@ class Admin::ProductsController < Admin::ResourceController
     when 'basic'
       collection.map {|p| {'id' => p.id, 'name' => p.name}}.to_json
     else
-      collection.to_json(:include => {:variants => {:include => {:option_values => {:include => :option_type}, :images => {}}}, :images => {}, :master => {}})
+      collection.to_json(:include => {:variants => {:include => {:option_values => {:include => :option_type}, 
+                                                  :images => {:only => [:id], :methods => :mini_url}}}, 
+                                                       :images => {:only => [:id], :methods => :mini_url}, :master => {}})
     end
   end
 
@@ -84,11 +86,7 @@ class Admin::ProductsController < Admin::ResourceController
       params[:search][:meta_sort] ||= "name.asc"
       @search = super.metasearch(params[:search])
 
-      pagination_options = {:include   => {:variants => [:images, :option_values]},
-                            :per_page  => Spree::Config[:admin_products_per_page],
-                            :page      => params[:page]}
-
-      @collection = @search.relation.group_by_products_id.paginate(pagination_options)
+      @collection = @search.relation.group_by_products_id.includes({:variants => [:images, :option_values]}).page(params[:page]).per(Spree::Config[:admin_products_per_page]
     else
       includes = [{:variants => [:images,  {:option_values => :option_type}]}, :master, :images]
 

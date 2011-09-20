@@ -87,7 +87,11 @@ class Shipment < ActiveRecord::Base
   
   #from api
   def self.find_by_param(param)
-    Shipment.where("id = ? OR number = ?", param, param).first
+    if param.to_i > 0
+       Shipment.find(param)
+     else
+       Shipment.where(:number => param).first
+     end
   end
 
   private

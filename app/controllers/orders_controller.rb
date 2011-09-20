@@ -1,6 +1,8 @@
 class OrdersController < Spree::BaseController
   before_filter :check_authorization
   
+  rescue_from ActiveRecord::RecordNotFound, :with => :render_404
+  
   #From Promo
   after_filter :clear_promotions
   
@@ -10,13 +12,15 @@ class OrdersController < Spree::BaseController
 
 
   def show
-    @order = Order.find_by_number(params[:id])
+    @order = Order.find_by_number!(params[:id])
+    respond_with(@order)
   end
 
   def update
     @order = current_order
     if @order.update_attributes(params[:order])
       @order.line_items = @order.line_items.select {|li| li.quantity > 0 }
+      fire_event('spree.order.contents_changed')
       respond_with(@order) { |format| format.html { redirect_to cart_path } }
     else
       respond_with(@order) 
@@ -43,7 +47,7 @@ class OrdersController < Spree::BaseController
 
     params[:products].each do |product_id,variant_id|
       quantity = params[:quantity].to_i if !params[:quantity].is_a?(Hash)
-      quantity = params[:quantity][variant_id].to_i if params[:quantity].is_a?(Hash)
+      quantity = params[:quantity][variant_id.to_i].to_i if params[:quantity].is_a?(Hash)
       @order.add_variant(Variant.find(variant_id), quantity) if quantity > 0
     end if params[:products]
 
@@ -52,6 +56,8 @@ class OrdersController < Spree::BaseController
       @order.add_variant(Variant.find(variant_id), quantity) if quantity > 0
     end if params[:variants]
 
+    fire_event('spree.cart.add')
+    fire_event('spree.order.contents_changed')
     respond_with(@order) { |format| format.html { redirect_to cart_path } }
   end
 

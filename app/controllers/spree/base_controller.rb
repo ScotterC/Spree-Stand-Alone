@@ -22,7 +22,6 @@ class Spree::BaseController < ActionController::Base
           flash.now[:error] = I18n.t(:authorization_failure)
           render 'shared/unauthorized', :layout => 'spree_application'
         else
-          flash[:error] = I18n.t(:authorization_failure)
           store_location
           redirect_to login_path and return
         end

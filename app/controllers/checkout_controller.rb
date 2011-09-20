@@ -2,13 +2,11 @@
 # Checkout object.  There's enough distinct logic specific to checkout which has nothing to do with updating an
 # order that this approach is waranted.
 class CheckoutController < Spree::BaseController
+  ssl_required
   before_filter :check_authorization
   before_filter :check_registration, :except => [:registration, :update_registration]
 
   helper :users
-  
-  ssl_required
-
   before_filter :load_order
   rescue_from Spree::GatewayError, :with => :rescue_from_spree_gateway_error
 
@@ -17,6 +15,12 @@ class CheckoutController < Spree::BaseController
   # Updates the order and advances to the next state (when possible.)
   def update
     if @order.update_attributes(object_params)
+
+      fire_event('spree.checkout.update')
+      if @order.respond_to?(:coupon_code) && @order.coupon_code.present?
+        fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
+      end
+
       if @order.next
         state_callback(:after)
       else
@@ -36,7 +40,7 @@ class CheckoutController < Spree::BaseController
       respond_with(@order) { |format| format.html { render :edit } }
     end
   end
-
+  
   def registration
     @user = User.new
   end
@@ -51,7 +55,7 @@ class CheckoutController < Spree::BaseController
       render 'registration'
     end
   end
-
+  
 
   private
 
@@ -108,8 +112,8 @@ class CheckoutController < Spree::BaseController
     flash[:error] = t('spree_gateway_error_flash_for_checkout')
     render :edit
   end
-
-  #from auth
+  
+  #From Auth
   def check_authorization
     authorize!(:edit, current_order, session[:access_token])
   end

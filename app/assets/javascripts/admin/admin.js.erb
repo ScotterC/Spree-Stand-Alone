@@ -1,0 +1,229 @@
+/**
+This is a collection of javascript functions and whatnot
+under the spree namespace that do stuff we find helpful.
+Hopefully, this will evolve into a propper class.
+**/
+
+var spree;
+if (!spree) spree = {};
+
+$(document).ajaxStart(function(){
+  $("#progress").slideDown();
+});
+
+$(document).ajaxStop(function(){
+  $("#progress").slideUp();
+});
+
+$.fn.visible = function(cond) { this[cond ? 'show' : 'hide' ]() };
+
+// Apply to individual radio button that makes another element visible when checked
+$.fn.radioControlsVisibilityOfElement = function(dependentElementSelector){
+  if(!this.get(0)){ return  }
+  showValue = this.get(0).value;
+  radioGroup = $("input[name='" + this.get(0).name + "']");
+  radioGroup.each(function(){
+    $(this).click(function(){
+      $(dependentElementSelector).visible(this.checked && this.value == showValue)
+    });
+    if(this.checked){ this.click() }
+  });
+}
+
+// Product autocompletion
+image_html = function(item){
+  return "<img src='" + item['images'][0]["mini_url"] + "'/>";
+}
+
+format_product_autocomplete = function(data){
+  var html = "";
+
+  var product = data['product'];
+
+  if(data['variant']==undefined){
+    // product
+
+    if(product['images'].length!=0){
+      html = image_html(product);
+    }
+
+    html += "<div><h4>" + product['name'] + "</h4>";
+    html += "<span><strong>Sku: </strong>" + product['master']['sku'] + "</span>";
+    html += "<span><strong>On Hand: </strong>" + product['count_on_hand'] + "</span></div>";
+  }else{
+    // variant
+    var variant = data['variant'];
+    var name = product['name'];
+
+    if(variant['images'].length!=0){
+      html = image_html(variant);
+    }else{
+      if(product['images'].length!=0){
+        html = image_html(product);
+      }
+    }
+
+    name += " - " + $.map(variant['option_values'], function(option_value){
+      return option_value["option_type"]["presentation"] + ": " + option_value['name'];
+    }).join(", ")
+
+    html += "<div><h4>" + name + "</h4>";
+    html += "<span><strong>Sku: </strong>" + variant['sku'] + "</span>";
+    html += "<span><strong>On Hand: </strong>" + variant['count_on_hand'] + "</span></div>";
+  }
+
+  return html
+}
+
+prep_product_autocomplete_data = function(data){
+  return $.map(eval(data), function(row) {
+
+    var product = row['product'];
+
+    if(product['variants'].length>0 && ['expand_variants']){
+      //variants
+      return $.map(product['variants'], function(variant){
+
+        var name = product['name'];
+        name += " - " + $.map(variant['option_values'], function(option_value){
+          return option_value["option_type"]["presentation"] + ": " + option_value['name'];
+        }).join(", ");
+
+        return {
+            data: {product: product, variant: variant},
+            value: name,
+            result: name
+        }
+      });
+    }else{
+      return {
+          data: {product: product},
+          value: product['name'],
+          result: product['name']
+      }
+    }
+  });
+}
+
+$.fn.product_autocomplete = function(){
+  $(this).autocomplete("/admin/products.json?authenticity_token=" + escape($('meta[name=csrf-token]').attr("content")), {
+      parse: prep_product_autocomplete_data,
+      formatItem: function(item) {
+        return format_product_autocomplete(item);
+      }
+    }).result(function(event, data, formatted) {
+      if (data){
+        if(data['variant']==undefined){
+          // product
+          $('#add_variant_id').val(data['product']['master']['id']);
+        }else{
+          // variant
+          $('#add_variant_id').val(data['variant']['id']);
+        }
+      }
+    });
+}
+
+$.fn.objectPicker = function(url){
+  $(this).tokenInput(url + "&authenticity_token=" + escape(AUTH_TOKEN), {
+    searchDelay          : 600,
+    hintText             : strings.type_to_search,
+    noResultsText        : strings.no_results,
+    searchingText        : strings.searching,
+    prePopulateFromInput : true
+  });
+};
+
+$.fn.productPicker = function(){
+  $(this).objectPicker(ajax_urls.product_search_basic_json);
+}
+$.fn.userPicker = function(){
+  $(this).objectPicker(ajax_urls.user_search_basic_json);
+}
+
+// Possible defunct
+add_fields = function(target, association, content) {
+  var new_id = new Date().getTime();
+  var regexp = new RegExp("new_" + association, "g");
+  $(target).append(content.replace(regexp, new_id));
+}
+
+$('a.remove_fields').live('click', function() {
+  $(this).prev("input[type=hidden]").val("1");
+  $(this).closest(".fields").hide();
+  return false;
+});
+
+$(".observe_field").live('change', function() {
+  target = $(this).attr("data-update");
+  ajax_indicator = $(this).attr("data-ajax-indicator") || '#busy_indicator';
+  $(target).hide();
+  $(ajax_indicator).show();
+  $.ajax({ dataType: 'html',
+           url: $(this).attr("data-base-url")+encodeURIComponent($(this).val()),
+           type: 'get',
+           success: function(data){
+             $(target).html(data);
+             $(ajax_indicator).hide();
+             $(target).show();
+           }
+  });
+});
+
+handle_date_picker_fields = function(){
+  $('.datepicker').datepicker({
+    dateFormat: 'yy/mm/dd',
+    showOn: "button",
+    buttonImage: "<%= asset_path 'datepicker/cal.gif' %>",
+    buttonImageOnly: true
+  });
+}
+
+$(document).ready(function(){
+
+  $('.tokeninput.products').productPicker();
+  $('.tokeninput.users').userPicker();
+
+  handle_date_picker_fields();
+
+  $(".select_properties_from_prototype").live("click", function(){
+    $("#busy_indicator").show();
+    var clicked_link = $(this);
+    $.ajax({ dataType: 'script', url: clicked_link.attr("href"), type: 'get',
+        success: function(data){
+          clicked_link.parent("td").parent("tr").hide();
+          $("#busy_indicator").hide();
+        }
+    });
+    return false;
+  });
+
+
+  $('table.sortable').ready(function(){
+    $('table.sortable tbody').sortable(
+      {
+        handle: '.handle',
+        update: function(event, ui) {
+          $("#progress").show();
+          positions = {};
+          type = '';
+          $.each($('table.sortable tbody tr'), function(position, obj){
+            reg = /(\w+_?)+_(\d+)/;
+            parts = reg.exec($(obj).attr('id'));
+            if (parts) { 
+              positions['positions['+parts[2]+']'] = position;
+              type = parts[1];
+            }
+          });
+          $.ajax({
+            type: 'POST',
+            dataType: 'script',
+            url: type+'s/update_positions',
+            data: positions,
+            success: function(data){ $("#progress").hide(); }
+          });
+        }
+      });
+  });
+
+});

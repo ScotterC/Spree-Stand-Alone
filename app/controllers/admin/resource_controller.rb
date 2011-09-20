@@ -1,15 +1,16 @@
 require 'spree_core/action_callbacks'
 class Admin::ResourceController < Admin::BaseController
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
-  before_filter :load_resource
-
-  #from auth
-  authorize_resource
+  prepend_before_filter :load_resource
 
   respond_to :html
   respond_to :js, :except => [:show, :index]
 
+  #from auth
+  authorize_resource
+
   def new
+    invoke_callbacks(:new_action, :before)
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }
       format.js { render :layout => false }
@@ -81,6 +82,11 @@ class Admin::ResourceController < Admin::BaseController
       @parent_data[:model_name] = model_name
       @parent_data[:model_class] = model_name.to_s.classify.constantize
       @parent_data[:find_by] = options[:find_by] || :id
+    end
+
+    def new_action
+      @callbacks ||= {}
+      @callbacks[:new_action] ||= Spree::ActionCallbacks.new
     end
 
     def create
